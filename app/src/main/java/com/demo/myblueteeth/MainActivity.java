@@ -2,11 +2,14 @@ package com.demo.myblueteeth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,6 +21,10 @@ import android.widget.Toast;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import butterknife.BindView;
@@ -32,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView rvList;
     BluetoothAdapter bluetoothAdapter;
     private MianAdapter mianAdapter;
+    List<BluetoothDevice> bluetoothDevices;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,18 +47,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-
         mianAdapter = new MianAdapter();
         rvList.setLayoutManager(new LinearLayoutManager(MainActivity.this, LinearLayoutManager.VERTICAL, false));
         rvList.setAdapter(mianAdapter);
+        mBuleTeethIsOpen();
+        bluetoothDevices = new ArrayList<>();
+        mianAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
+                getBond(position);
+            }
+        });
     }
 
-    @OnClick({R.id.btnGetBuleTeeth, R.id.btnIsOpen})
+    @OnClick({R.id.btnGetBuleTeeth,})
     public void onViewClicked(View view) {
         switch (view.getId()) {
-            case R.id.btnIsOpen:
-                mBuleTeethIsOpen();
-                break;
             case R.id.btnGetBuleTeeth:
                 bluetoothAdapter.startDiscovery();
                 break;
@@ -65,18 +77,12 @@ public class MainActivity extends AppCompatActivity {
      */
     private boolean mBuleTeethIsOpen() {
         boolean isOpen = false;
-
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter != null) {
             if (bluetoothAdapter.isEnabled()) {
                 Toast.makeText(MainActivity.this, "蓝牙已打开", Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(MainActivity.this, "蓝牙已关闭", Toast.LENGTH_LONG).show();
-            }
-
-            // 判断是否打开蓝牙
-            if (!bluetoothAdapter.isEnabled()) {
-                //弹出对话框提示用户是后打开
                 Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(intent, 0x123);
             }
@@ -95,16 +101,17 @@ public class MainActivity extends AppCompatActivity {
                 if (scanDevice == null || scanDevice.getName() == null) return;
                 BlueTeethInfo blueTeethInfo = new BlueTeethInfo();
                 blueTeethInfo.setName(scanDevice.getName());
-                Log.d("dddsss", "onReceive: " + scanDevice.getName()+"mac："+scanDevice.getAddress());
+                Log.d("dddsss", "onReceive: " + scanDevice.getName() + "mac：" + scanDevice.getAddress());
                 Set<BluetoothDevice> devices = bluetoothAdapter.getBondedDevices();
                 for (BluetoothDevice bonddevice : devices) {
-                    if (bonddevice.getBondState() != BluetoothDevice.BOND_BONDED) {
+                    if (bonddevice.getAddress().equals(scanDevice.getAddress())) {
                         blueTeethInfo.setPei(true);
+                        break;
                     } else {
                         blueTeethInfo.setPei(false);
                     }
                 }
-
+                bluetoothDevices.add(scanDevice);
                 mianAdapter.addData(blueTeethInfo);
             }
         }
@@ -156,13 +163,28 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void convert(BaseViewHolder helper, BlueTeethInfo item) {
-
             helper.setText(R.id.txtName, item.getName());
             if (item.isPei) {
                 helper.setText(R.id.isPeiDui, "已配对");
             } else {
                 helper.setText(R.id.isPeiDui, "未配对");
             }
+        }
+    }
+
+    private void getBond(int i) {
+        try {
+            Method method = BluetoothDevice.class.getMethod("createBond");
+            Log.e(getPackageName(), "开始配对");
+            Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
+            bluetoothDevices.addAll(bondedDevices);
+            if (bluetoothDevices.get(i).getBondState() == BluetoothDevice.BOND_NONE) {
+                method.invoke(bluetoothDevices.get(i));
+            } else {
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
