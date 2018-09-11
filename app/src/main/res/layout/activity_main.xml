@@ -9,11 +9,24 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/btnOpenBle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="打开蓝牙" />
+
         <Button
             android:id="@+id/btnGetBuleTeeth"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="获取蓝牙" />
+
+        <Button
+            android:id="@+id/btnPrint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="打印" />
     </LinearLayout>
 
     <android.support.v7.widget.RecyclerView
