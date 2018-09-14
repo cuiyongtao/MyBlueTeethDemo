@@ -15,14 +15,12 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
-import com.chad.library.adapter.base.BaseViewHolder;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -98,7 +96,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.btnGetBuleTeeth:
                 if (bluetoothAdapter != null) {
-//                    bluetoothAdapter.startDiscovery();
                     registerReceiver();
                 }
                 break;
@@ -223,7 +220,6 @@ public class MainActivity extends AppCompatActivity {
                 //连接socket
                 mmSocket.connect();
                 //连接成功获取输出流
-//                outputStream = mmSocket.getOutputStream();
 //                PrintUtils.outputStream=mmSocket.getOutputStream();
                 PrintUtils.setOutputStream(mmSocket.getOutputStream());
                 PrintUtils.selectCommand(PrintUtils.RESET);
@@ -261,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
                 PrintUtils.selectCommand(PrintUtils.ALIGN_LEFT);
                 PrintUtils.printText("备注：不要辣、不要香菜");
                 PrintUtils.printText("\n\n\n\n\n");
-//                send(mPrintContent);
+                send(mPrintContent);
             } catch (Exception connectException) {
                 Log.e("test", "连接失败");
                 connectException.printStackTrace();
@@ -308,7 +304,6 @@ public class MainActivity extends AppCompatActivity {
             outputStream.write(data, 0, data.length);
             outputStream.flush();
             outputStream.close();
-//            progressDialog.dismiss();
         } catch (IOException e) {
             e.printStackTrace();
             handler.sendEmptyMessage(exceptionCod); // 向Handler发送消息,更新UI
@@ -324,9 +319,6 @@ public class MainActivity extends AppCompatActivity {
             super.handleMessage(msg);
             if (msg.what == exceptionCod) {
                 Toast.makeText(MainActivity.this, "打印发送失败，请稍后再试", Toast.LENGTH_SHORT).show();
-//                if (progressDialog != null) {
-//                    progressDialog.dismiss();
-//                }
             }
         }
     };
